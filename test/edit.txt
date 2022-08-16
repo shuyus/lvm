@@ -1,0 +1,12 @@
+约定
+TValue的_tt记录垃圾收集位  
+GCObject不记录
+
+
+luaV_ 参数从Table改TValue
+setgco  setgcovalue
+
+ttisnumber  ttisfloat
+gco2table gco2h
+setcclosure setcclvalue
+LUA_TDEADKEY

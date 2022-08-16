@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "lua_state.h": "c",
+        "lua_object.h": "c",
+        "lua_aux.h": "c",
+        "lua_prefix.h": "c",
+        "lua.h": "c",
+        "lua_config.h": "c",
+        "lua_mem.h": "c",
+        "lua_gc.h": "c",
+        "lua_string.h": "c",
+        "lua_table.h": "c",
+        "stdint.h": "c",
+        "lua_api.h": "c",
+        "lua_opcodes.h": "c",
+        "lua_vm.h": "c"
+    }
+}
