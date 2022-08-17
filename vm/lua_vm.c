@@ -91,6 +91,7 @@ static void op_gettabup(struct lua_State* L, LClosure* cl, StkId ra, Instruction
 	}
 }
 
+/* CFunction，CClosure和LClosure都可以 */
 static void op_call(struct lua_State* L, LClosure* cl, StkId ra, Instruction i) {
 	int narg = GET_ARG_B(i);
 	int nresult = GET_ARG_C(i) - 1;
@@ -102,8 +103,7 @@ static void op_call(struct lua_State* L, LClosure* cl, StkId ra, Instruction i) 
 		if (nresult >= 0) {
 			L->top = L->ci->top;
 		}
-	}
-	else {
+	} else {  // closure
 		newframe(L);
 	}
 }
@@ -118,6 +118,7 @@ static void op_return(struct lua_State* L, LClosure* cl, StkId ra, Instruction i
 }
 
 void luaV_execute(struct lua_State* L) {
+	luaK_printInstruction(L->ci->l.savedpc);
 	L->ci->callstatus |= CIST_FRESH;
 	newframe(L);
 }
@@ -127,6 +128,7 @@ static Instruction vmfetch(struct lua_State* L) {
 	return i;
 }
 
+/* 获取R(A)代表的栈位置 */
 static StkId vmdecode(struct lua_State* L, Instruction i) {
 	StkId ra = L->ci->l.base + GET_ARG_A(i);
 	return ra;
@@ -166,6 +168,7 @@ static void newframe(struct lua_State* L) {
 	}
 }
 
+/* v类型是integer或float，把v的实际数值赋予i指向的lua_Number */
 int luaV_tonumber(struct lua_State* L, const TValue* v, lua_Number* n) {
 	int result = 0;
 	if (ttisinteger(v)) {
@@ -178,6 +181,7 @@ int luaV_tonumber(struct lua_State* L, const TValue* v, lua_Number* n) {
 	return result;
 }
 
+/* v类型是integer或float，把v的实际数值赋予i指向的lua_Integer */
 int luaV_tointeger(struct lua_State* L, const TValue* v, lua_Integer* i) {
 	int result = 0;
 	if (ttisinteger(v)) {

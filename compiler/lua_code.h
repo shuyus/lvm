@@ -6,7 +6,16 @@
 #include "lua_parser.h"
 
 #define get_instruction(fs, e) (fs->p->code[e->u.info])
+#define NO_JUMP -1
+#define NO_REG MAXARG_A
 
+#define luaK_codeAsBx(fs, c, a, sbx) luaK_codeABx(fs, c, a, sbx + LUA_IBIAS)
+
+/*
+** Ensures final expression result is either in a register or it is
+** a constant.
+*/
+LUAI_FUNC void luaK_exp2val(FuncState* fs, expdesc* e);
 LUAI_FUNC int luaK_exp2RK(FuncState* fs, expdesc* e);   // discharge expression to constant table or specific register
 LUAI_FUNC int luaK_stringK(FuncState* fs, TString* key); // generate an expression to index constant in constants vector
 LUAI_FUNC int luaK_nilK(FuncState* fs);
@@ -23,5 +32,7 @@ LUAI_FUNC int luaK_codeABx(FuncState* fs, int opcode, int a, int bx);
 LUAI_FUNC void luaK_dischargevars(FuncState* fs, expdesc* e);
 LUAI_FUNC int luaK_exp2nextreg(FuncState* fs, expdesc* e);    // discharge expression to next register 
 LUAI_FUNC int luaK_exp2anyreg(FuncState* fs, expdesc * e); 
+
+LUAI_FUNC void luaK_prefix(FuncState* fs, int op, expdesc* e);
 
 #endif

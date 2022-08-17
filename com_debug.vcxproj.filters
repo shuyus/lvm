@@ -72,7 +72,7 @@
     <ClCompile Include="vm\lua_vm.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="debugg\sy_debug.c">
+    <ClCompile Include="debugg\lua_debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -125,9 +125,6 @@
     <ClInclude Include="compiler\lua_zio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debug\sy_debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vm\lua_do.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vm\lua_vm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debugg\lua_debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

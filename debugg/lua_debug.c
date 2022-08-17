@@ -1,7 +1,49 @@
-﻿#include "sy_debug.h"
+﻿#include "lua_debug.h"
 #include "stdarg.h"
 #include "../common/lua_table.h"
 #include "../common/lua.h"
+
+char* OpCodeDesc[] = {
+    "OP_MOVE",
+    "OP_LOADK",
+    "OP_GETUPVAL",
+    "OP_CALL",
+    "OP_RETURN",
+    "OP_GETTABUP",
+    "OP_GETTABLE",
+    "OP_SELF",
+    "OP_TEST",
+    "OP_TESTSET",
+    "OP_JUMP",
+    "OP_UNM",
+    "OP_LEN",
+    "OP_BNOT",
+    "OP_NOT",
+    "OP_ADD",
+    "OP_SUB",
+    "OP_MUL",
+    "OP_DIV",
+    "OP_IDIV",
+    "OP_MOD",
+    "OP_POW",
+    "OP_BAND",
+    "OP_BOR",
+    "OP_BXOR",
+    "OP_SHL",
+    "OP_SHR",
+    "OP_CONCAT",
+    "OP_EQ",
+    "OP_LT",
+    "OP_LE",
+    "OP_LOADBOOL",
+    "OP_LOADNIL",
+    "OP_SETUPVAL",
+    "OP_SETTABUP",
+    "OP_NEWTABLE",
+    "OP_SETLIST",
+    "OP_SETTABLE",
+    "NUM_OPCODES"
+};
 
 TValue* luaL_index2addr(struct lua_State* L, int idx) {
     if (idx >= 0) {
@@ -13,13 +55,13 @@ TValue* luaL_index2addr(struct lua_State* L, int idx) {
     }
 }
 
-void luaGG_TableInfo(struct lua_State* L,int idx){
+void luaH_TableInfo(struct lua_State* L,int idx){
     TValue* o = luaL_index2addr(L, idx);
     Table* h =hvalue(o);
     printf("%p table info arraysize %d lsizenode %d\n",h,h->arraysize,h->lsizenode);
 }
 
-void luaGG_Print(const TValue * t){
+void luaO_Print(const TValue * t){
     switch (ttype(t))
     {
 
@@ -77,7 +119,7 @@ void luaGG_Print(const TValue * t){
     }
 }
 
-void luaGG_PrintGC(const GCObject* t){
+void luaO_PrintGC(const GCObject* t){
     switch (t->tt_)
     {
 
@@ -103,37 +145,52 @@ void luaGG_PrintGC(const GCObject* t){
     }
 }
 
-void luaGG_DumpTable(lua_State * L, Table * t){
+void luaH_DumpTable(lua_State * L, Table * t){
     printf("========DumpTable address:%p ==============\n",t);
     printf("arraysize: %d lsizenode: %d\n",t->arraysize,t->lsizenode);
     printf("Array:\n");
     for(unsigned int i=0; i<t->arraysize;i++){
         printf("\t  i:%d v:\t",i+1);
-        luaGG_Print(t->array+i);
+        luaO_Print(t->array+i);
     }
 
     printf("Hash:\n");
     for(int k=0; k<twoto(t->lsizenode);k++){
         printf("\t key:  ");
-        luaGG_Print(getkey(t->node+k));
+        luaO_Print(getkey(t->node+k));
         printf("\t val:  ");
-        luaGG_Print(getval(t->node+k));
+        luaO_Print(getval(t->node+k));
     }
     printf("========DumpTable   OVER  ==============\n");
 }
 
-void luaGG_printProto(Proto* p) {
+void luaO_printProto(Proto* p) {
     //printf("==============localval=====================\n");
     //
     //printf("==============upval=====================\n");
     //for (int i = 0; i < p->sizeupvalues; i++) {
     //    p->upvalues[i];
     //}
-    printf("==============k=====================\n");
+    printf("==============常量表k=====================\n");
     for (int i = 0; i < p->sizek; i++) {
         TValue * k = &p->k[i];
-        luaGG_Print(k);
+        luaO_Print(k);
     }
+
+}
+
+void luaK_printInstruction(const Instruction* i) {
+    printf("=============指令=========================\n");
+    bool is_return = false;
+   // printf("%p %s", OpCodeDesc[4], OpCodeDesc[4]);
+    while (!is_return) {
+        char* desc = GET_OPCODE_DESC(*i);
+
+        printf("%s ", desc);
+        is_return = IS_RETURN_DESC(desc);
+        i++;
+    }
+    printf("\n");
 }
 
 

@@ -16,9 +16,9 @@ typedef TValue* StkId;
 struct CallInfo {
     StkId func; /* 被调用函数在栈中的位置 */
     StkId top;  /* 被调用函数的栈顶位置 */
-    struct { // only for lua
+    struct { /* 只有执行LClosure才会用到这个结构 */
 		StkId base; /* 指向当前函数帧的栈底，即栈中对应LClosure的下一个位置 */
-		const Instruction* savedpc;
+		const Instruction* savedpc; /* 初始化时指向cl->p->code */
 	} l;
     int nresult; /* 有多少个返回值 */
     int callstatus; /* 调用状态 */

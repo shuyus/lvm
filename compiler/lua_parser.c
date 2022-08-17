@@ -10,9 +10,10 @@
 #include "../vm/lua_opcodes.h"
 #include "../common/lua_table.h"
 
-static void suffixexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e);
+static void suffixdexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e);
 
 #define eqstr(a, b) ((a) == (b))
+#define check_condition(ls, c, s) if(!(c)) luaX_syntaxerror(ls->L, ls, s)
 
 /* e->k e->u->info */
 static void init_exp(expdesc* e, expkind k, int i) {
@@ -145,11 +146,11 @@ static void primaryexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc
 	}
 }
 
-static void expr(FuncState* fs, expdesc* e) {
+static void simpleexp(FuncState* fs, expdesc* e) {
 	LexState* ls = fs->ls;
 	switch (ls->t.token) {
 	case TK_NAME: {
-		suffixexp(fs->ls->L, fs->ls, fs, e);
+		suffixdexp(fs->ls->L, fs->ls, fs, e);
 	} break;
 	case TK_STRING: {
 		codestring(fs, ls->t.seminfo.s, e);
@@ -181,6 +182,90 @@ static void expr(FuncState* fs, expdesc* e) {
 		luaX_syntaxerror(ls->L, ls, "unsupport syntax");
 		break;
 	}
+}
+
+static UnOpr getunopr(LexState* ls) {
+	switch (ls->t.token) {
+	case '-': return UNOPR_MINUS;
+	case TK_NOT: return UNOPR_NOT;
+	case '#': return UNOPR_LEN;
+	case '~': return UNOPR_BNOT;
+	default: return NOUNOPR;
+	}
+}
+
+static BinOpr getbinopr(LexState* ls) {
+	switch (ls->t.token) {
+	case '+': return BINOPR_ADD;
+	case '-': return BINOPR_SUB;
+	case '*': return BINOPR_MUL;
+	case '/': return BINOPR_DIV;
+	case TK_MOD: return BINOPR_MOD;
+	case '^': return BINOPR_POW;
+	case '&': return BINOPR_BAND;
+	case '|': return BINOPR_BOR;
+	case '~': return BINOPR_BXOR;
+	case TK_SHL: return BINOPR_SHL;
+	case TK_SHR: return BINOPR_SHR;
+	case TK_CONCAT: return BINOPR_CONCAT;
+	case '>': return BINOPR_GREATER;
+	case '<': return BINOPR_LESS;
+	case TK_GREATEREQUAL: return BINOPR_GREATEQ;
+	case TK_LESSEQUAL: return BINOPR_LESSEQ;
+	case TK_EQUAL: return BINOPR_EQ;
+	case TK_NOTEQUAL: return BINOPR_NOTEQ;
+	case TK_AND: return BINOPR_AND;
+	case TK_OR: return BINOPR_OR;
+	default:return NOBINOPR;
+	}
+}
+
+static const struct {
+	lu_byte left;   // left priority for each binary operator
+	lu_byte right;  // right priority
+} priority[] = {
+	{10,10}, {10,10},		   // '+' and '-'
+	{11,11}, {11,11}, {11,11}, {11, 11}, // '*', '/', '//' and '%'
+	{14,13},				   // '^' right associative
+	{6,6}, {4,4}, {5,5},	   // '&', '|' and '~'
+	{7,7}, {7,7},			   // '<<' and '>>'
+	{9,8},					   // '..' right associative
+	{3,3}, {3,3}, {3,3}, {3,3}, {3,3}, {3,3}, // '>', '<', '>=', '<=', '==', '~=',
+	{2,2}, {1,1},			   // 'and' and 'or'
+};
+
+///* limit指定当前运算符的优先级的 */
+//static int subexpr(FuncState* fs, expdesc* e, int limit) {
+//	LexState* ls = fs->ls;
+//	int unopr = getunopr(ls);
+//
+//	if (unopr != NOUNOPR) {
+//		luaX_next(fs->ls->L, fs->ls);
+//		subexpr(fs, e, UNOPR_PRIORITY);
+//		luaK_prefix(fs, unopr, e);
+//	} else {
+//		simpleexp(fs, e);
+//	}
+//
+//	int binopr = getbinopr(ls);
+//	while (binopr != NOBINOPR && priority[binopr].left > limit) {
+//		expdesc e2;
+//		init_exp(&e2, VVOID, 0);
+//
+//		luaX_next(ls->L, ls);
+//		luaK_infix(fs, binopr, e);
+//		int nextop = subexpr(fs, &e2, priority[binopr].right);
+//		luaK_posfix(fs, binopr, e, &e2);
+//
+		//binopr = nextop;
+//	}
+//
+//	return binopr;
+//}
+
+static void expr(FuncState* fs, expdesc* e) {
+	//subexpr(fs, e, 0);
+	simpleexp(fs, e);
 }
 
 static int explist(FuncState* fs, expdesc* e) {
@@ -231,7 +316,7 @@ static void funcargs(FuncState* fs, expdesc* e) {
 }
 
 /* suffixedexp ::= primaryexp {'.' NAME | '[' expr ']' | ':' NAME funcargs | funcargs} */
-static void suffixexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e) {
+static void suffixdexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e) {
 	primaryexp(L, ls, fs, e); /* 先分析第一个TK_NAME */
 	luaX_next(L, ls);
 	switch (ls->t.token) {
@@ -255,8 +340,13 @@ assignment ::= suffixedexp {, suffixedexp} ['=' explist]
 */
 
 static void exprstat(struct lua_State* L, LexState* ls, FuncState* fs) { 
-	expdesc e;
-	suffixexp(L, ls, fs, &e);  
+	LH_assign lh;
+	suffixdexp(L, ls, fs, &lh.v);  
+	//if (ls->t.token == '=' || ls->t.token == ',') {
+	//	assignment(fs, &lh, 1);
+	//} else {
+	//	check_condition(ls, lh.v.k == VCALL, "exp type error");
+	//}
 }
 
 static void statement(struct lua_State* L, LexState* ls, FuncState* fs) {
@@ -309,9 +399,8 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
 	int token = luaX_next(L, ls);
 	while (token != TK_EOS) {
 		if (token <= TK_FUNCTION && token >= FIRST_REVERSED) {
-			printf("%s \n", luaX_tokens[token - FIRST_REVERSED]);
-		}
-		else {
+			printf("REVERSED: %s \n", luaX_tokens[token - FIRST_REVERSED]);
+		} else {
 			switch (token)
 			{
 			case TK_STRING: {
@@ -363,7 +452,7 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
 		}
 		token = luaX_next(L, ls);
 	}
-	printf("total linenumber = %d", ls->linenumber);
+	printf("total linenumber = %d\n\n", ls->linenumber);
 }
 
 LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* dyd, const char* name) {
@@ -371,6 +460,8 @@ LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* d
 	LexState ls;
 	luaX_setinput(L, &ls, zio, buffer, dyd, luaS_newliteral(L, name), luaS_newliteral(L, LUA_ENV));
 	ls.current = zget(ls.zio);
+
+	test_lexer(L, &ls);
 	
 	LClosure* closure = luaF_newLclosure(L, 1);
 	closure->p = fs.p = luaF_newproto(L);

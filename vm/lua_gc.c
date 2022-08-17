@@ -5,6 +5,7 @@
 #include "../common/lua_string.h"
 #include "../common/lua_table.h"
 #include "../vm/lua_func.h"
+#include "../common/lua_object.h"
 
 #define GCMAXSWEEPGCO 25
 

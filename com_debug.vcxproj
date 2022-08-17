@@ -111,7 +111,7 @@
     <ClCompile Include="compiler\lua_lexer.c" />
     <ClCompile Include="compiler\lua_parser.c" />
     <ClCompile Include="compiler\lua_zio.c" />
-    <ClCompile Include="debugg\sy_debug.c" />
+    <ClCompile Include="debugg\lua_debug.c" />
     <ClCompile Include="test\main.c" />
     <ClCompile Include="vm\lua_do.c" />
     <ClCompile Include="vm\lua_func.c" />
@@ -136,7 +136,7 @@
     <ClInclude Include="compiler\lua_lexer.h" />
     <ClInclude Include="compiler\lua_parser.h" />
     <ClInclude Include="compiler\lua_zio.h" />
-    <ClInclude Include="debug\sy_debug.h" />
+    <ClInclude Include="debugg\lua_debug.h" />
     <ClInclude Include="vm\lua_do.h" />
     <ClInclude Include="vm\lua_func.h" />
     <ClInclude Include="vm\lua_gc.h" />

@@ -68,6 +68,37 @@ typedef LUA_UNSIGNED lua_Unsigned;
 #define LUA_MAXCALLS 200
 
 
+
+//
+#define LUA_OPT_UMN		1
+#define LUA_OPT_LEN		2
+#define LUA_OPT_BNOT	3
+#define LUA_OPT_NOT		4
+
+#define	LUA_OPT_ADD		5
+#define	LUA_OPT_SUB		6
+#define	LUA_OPT_MUL		7
+#define	LUA_OPT_DIV		8
+#define LUA_OPT_IDIV    9
+#define	LUA_OPT_MOD		10
+#define	LUA_OPT_POW		11
+#define	LUA_OPT_BAND    12
+#define	LUA_OPT_BOR		13
+#define	LUA_OPT_BXOR	14
+#define	LUA_OPT_SHL		15
+#define	LUA_OPT_SHR		16
+#define	LUA_OPT_CONCAT  17
+#define	LUA_OPT_GREATER 18
+#define	LUA_OPT_LESS	19
+#define	LUA_OPT_EQ		20
+#define	LUA_OPT_GREATEQ 21
+#define	LUA_OPT_LESSEQ  22
+#define	LUA_OPT_NOTEQ	23
+#define	LUA_OPT_AND		24
+#define	LUA_OPT_OR		25
+
+
+
 // 
 #define LUA_ERROR(L, s) printf("LUA ERROR:%s", s)
 #define point2uint(p) ((unsigned int)((size_t)p & UINT_MAX))

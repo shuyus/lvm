@@ -16,21 +16,21 @@
 #define BITRK 256
 #define MAININDEXRK (BITRK - 1)
 #define RKMASK(v) (BITRK | v)
-#define ISK(v) (v & ~(BITRK - 1))
-#define RK(L, cl, v) ISK(v) ? (&cl->p->k[v - BITRK]) : (L->ci->l.base + v)
+#define ISK(v) ((v) & ~(BITRK - 1))
+#define RK(L, cl, v) ISK(v) ? (&(cl)->p->k[(v) - BITRK]) : ((L)->ci->l.base + (v))
 
-#define SET_OPCODE(i, r)  (i = (i & 0xFFFFFFC0) | r)
-#define SET_ARG_A(i, r)   (i = (i & 0xFFFFC03F) | r << 6) 
-#define SET_ARG_B(i, r)   (i = (i & 0x007FFFFF) | r << 23)
-#define SET_ARG_C(i, r)   (i = (i & 0xFF803FFF) | r << 14)
-#define SET_ARG_Bx(i, r)  (i = (i & 0x00003FFF) | r << 14)
-#define SET_ARG_sBx(i, r) (i = (i & 0x00003FFF) | ((r + LUA_IBIAS) << 14))
+#define SET_OPCODE(i, r)  ((i) = ((i) & 0xFFFFFFC0) | (r))
+#define SET_ARG_A(i, r)   ((i) = ((i) & 0xFFFFC03F) | (r) << 6) 
+#define SET_ARG_B(i, r)   ((i) = ((i) & 0x007FFFFF) | (r) << 23)
+#define SET_ARG_C(i, r)   ((i) = ((i) & 0xFF803FFF) | (r) << 14)
+#define SET_ARG_Bx(i, r)  ((i) = ((i) & 0x00003FFF) | (r) << 14)
+#define SET_ARG_sBx(i, r) ((i) = ((i) & 0x00003FFF) | (((r) + LUA_IBIAS) << 14))
 
-#define GET_OPCODE(i) (i & 0x3F)
-#define GET_ARG_A(i) ((i & 0x3FC0) >> POS_A)
-#define GET_ARG_B(i) ((i & 0xFF800000) >> POS_B)
-#define GET_ARG_C(i) ((i & 0x7FC000) >> POS_C)
-#define GET_ARG_Bx(i) ((i & 0xFFFFC000) >> (SIZE_A + SIZE_OP))
+#define GET_OPCODE(i) ((i) & 0x3F)
+#define GET_ARG_A(i) (((i) & 0x3FC0) >> POS_A)
+#define GET_ARG_B(i) (((i) & 0xFF800000) >> POS_B)
+#define GET_ARG_C(i) (((i) & 0x7FC000) >> POS_C)
+#define GET_ARG_Bx(i) (((i) & 0xFFFFC000) >> (SIZE_A + SIZE_OP))
 #define GET_ARG_sBx(i) (GET_ARG_Bx(i) - LUA_IBIAS)
 
 #define MAXARG_A ((1 << SIZE_A) - 1)
@@ -38,7 +38,7 @@
 #define MAXARG_C ((1 << SIZE_C) - 1)
 #define MAXARG_Bx ((1 << (SIZE_B + SIZE_C)) - 1)
 #define MAXARG_sBx (MAXARG_Bx / 2)
-#define TEST_MODE(op, m) ((op & 0x03) == m)
+#define TEST_MODE(op, m) (((op) & 0x03) == (m))
 
 #define LFIELD_PER_FLUSH 50
 
@@ -125,5 +125,6 @@ enum OpArgMask {
 };
 
 LUAI_DATA const lu_byte luaP_opmodes[NUM_OPCODES];
+
 
 #endif

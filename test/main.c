@@ -3,7 +3,7 @@
 #include "../vm/lua_gc.h"
 #include "../vm/lua_vm.h"
 #include "../common/lua_string.h"
-#include "../debugg/sy_debug.h"
+#include "../debugg/lua_debug.h"
 
 int panic(lua_State *L){
     printf("abort~!!!!\n");
@@ -14,14 +14,21 @@ int panic(lua_State *L){
 
 void main() {
 	struct lua_State* L = luaL_newstate();
+	
+
 	luaL_openlibs(L);
 
 	int ok = luaL_loadfile(L, "C:\\Users\\shuyu\\Desktop\\step\\compiler_vc_2\\test\\t.lua");
+
 	if (ok == LUA_OK) {
 		luaL_pcall(L, 0, 0);
 	}
 
 	luaL_close(L);
+
+	
+	
+
 }
 
 

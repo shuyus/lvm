@@ -84,6 +84,7 @@ void luaF_freeLclosure(struct lua_State* L, LClosure* cl) {
 	luaM_free(L, (void*)cl, sizeofLClosure(cl->nupvalues));
 }
 
+/* nup指代CClosure::upvals元素数量 */
 CClosure* luaF_newCclosure(struct lua_State* L, lua_CFunction func, int nup) {
 	struct GCObject* gco = luaC_newobj(L, LUA_TCCL, sizeofCClosure(nup));
 	CClosure* cc = gco2cclosure(gco);

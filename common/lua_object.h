@@ -273,7 +273,11 @@ typedef union Closure {
 } Closure;
 
 
-LUAI_FUNC int luaO_ceillog2(int value);
+#define MAXABITS (sizeof(int) * CHAR_BIT - 1)
+
+LUAI_FUNC int luaO_ceillog2(lua_Integer value);
+LUAI_FUNC int luaO_arith(struct lua_State* L, int op, TValue* v1, TValue* v2); // the result will store in v1
+
 
 
 #endif
