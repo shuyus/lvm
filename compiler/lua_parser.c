@@ -234,38 +234,37 @@ static const struct {
 	{2,2}, {1,1},			   // 'and' and 'or'
 };
 
-///* limit指定当前运算符的优先级的 */
-//static int subexpr(FuncState* fs, expdesc* e, int limit) {
-//	LexState* ls = fs->ls;
-//	int unopr = getunopr(ls);
-//
-//	if (unopr != NOUNOPR) {
-//		luaX_next(fs->ls->L, fs->ls);
-//		subexpr(fs, e, UNOPR_PRIORITY);
-//		luaK_prefix(fs, unopr, e);
-//	} else {
-//		simpleexp(fs, e);
-//	}
-//
-//	int binopr = getbinopr(ls);
-//	while (binopr != NOBINOPR && priority[binopr].left > limit) {
-//		expdesc e2;
-//		init_exp(&e2, VVOID, 0);
-//
-//		luaX_next(ls->L, ls);
-//		luaK_infix(fs, binopr, e);
-//		int nextop = subexpr(fs, &e2, priority[binopr].right);
-//		luaK_posfix(fs, binopr, e, &e2);
-//
-		//binopr = nextop;
-//	}
-//
-//	return binopr;
-//}
+/* limit指定当前运算符的优先级的 */
+static int subexpr(FuncState* fs, expdesc* e, int limit) {
+	LexState* ls = fs->ls;
+	int unopr = getunopr(ls); /* 试图获取一个前缀运算符 */
+
+	if (unopr != NOUNOPR) { /* 获取的确实是一个前缀运算符 */
+		luaX_next(fs->ls->L, fs->ls);
+		subexpr(fs, e, UNOPR_PRIORITY); /* 分析运算符后一个表达式 */
+		luaK_prefix(fs, unopr, e); /* 整合运算符和其后一个表达式 */
+	} else {
+		simpleexp(fs, e);
+	}
+
+	int binopr = getbinopr(ls);
+	while (binopr != NOBINOPR && priority[binopr].left > limit) {
+		expdesc e2;
+		init_exp(&e2, VVOID, 0);
+
+		luaX_next(ls->L, ls);
+		luaK_infix(fs, binopr, e);
+		int nextop = subexpr(fs, &e2, priority[binopr].right);
+		luaK_posfix(fs, binopr, e, &e2);
+
+		binopr = nextop;
+	}
+
+	return binopr;
+}
 
 static void expr(FuncState* fs, expdesc* e) {
-	//subexpr(fs, e, 0);
-	simpleexp(fs, e);
+	subexpr(fs, e, 0);
 }
 
 static int explist(FuncState* fs, expdesc* e) {

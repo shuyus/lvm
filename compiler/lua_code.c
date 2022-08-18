@@ -131,46 +131,46 @@ static void codeunexpval(FuncState* fs, int op, expdesc* e) {
 	e->k = VRELOCATE;
 }
 
-//static void codenot(FuncState* fs, expdesc* e) {
-//	switch (e->k) {
-//	case VFALSE: case VNIL: {
-//		e->k = VTRUE;
-//	} return;
-//	case VTRUE: case VINT: case VFLT: {
-//		e->k = VFALSE;
-//	} return;
-//	default:break;
-//	}
-//
-//	discharge2anyreg(fs, e);
-//	freeexp(fs, e);
-//	lua_assert(e->k == VNONRELOC);
-//	e->u.info = luaK_codeABC(fs, OP_NOT, 0, e->u.info, 0);
-//	e->k = VRELOCATE;
-//}
+static void codenot(FuncState* fs, expdesc* e) {
+	switch (e->k) {
+	case VFALSE: case VNIL: {
+		e->k = VTRUE;
+	} return;
+	case VTRUE: case VINT: case VFLT: {
+		e->k = VFALSE;
+	} return;
+	default:break;
+	}
+
+	discharge2anyreg(fs, e);
+	freeexp(fs, e);
+	lua_assert(e->k == VNONRELOC);
+	e->u.info = luaK_codeABC(fs, OP_NOT, 0, e->u.info, 0);
+	e->k = VRELOCATE;
+}
 
 
 
 /* 前缀 - ~ # not  */
-//void luaK_prefix(FuncState* fs, int op, expdesc* e) {
-//	expdesc ef;
-//	ef.k = VINT; ef.u.info = 0; ef.t = ef.f = NO_JUMP;
-//
-//	switch (op) {
-//	case UNOPR_MINUS: case UNOPR_BNOT: {
-//		if (constfolding(fs, LUA_OPT_UMN + op, e, &ef)) {
-//			break;
-//		}
-//	}
-//	case UNOPR_LEN: {
-//		codeunexpval(fs, op, e);
-//	} break;
-//	case UNOPR_NOT: {
-//		codenot(fs, e);
-//	} break;
-//	default:lua_assert(0);
-//	}
-//}
+void luaK_prefix(FuncState* fs, int op, expdesc* e) {
+	expdesc ef;
+	ef.k = VINT; ef.u.info = 0; ef.t = ef.f = NO_JUMP;
+
+	switch (op) {
+	case UNOPR_MINUS: case UNOPR_BNOT: {
+		if (constfolding(fs, LUA_OPT_UMN + op, e, &ef)) {
+			break;
+		}
+	}
+	case UNOPR_LEN: {
+		codeunexpval(fs, op, e);
+	} break;
+	case UNOPR_NOT: {
+		codenot(fs, e);
+	} break;
+	default:lua_assert(0);
+	}
+}
 
 int luaK_exp2RK(FuncState* fs, expdesc* e) {
 	switch (e->k) {
@@ -261,7 +261,9 @@ void luaK_dischargevars(FuncState* fs, expdesc* e) {
 		e->k = VRELOCATE;
 	} break;
 	case VINDEXED: { /* 这里还没有填充A */
+		freereg(fs, e->u.ind.idx);
 		if (e->u.ind.vt == VLOCAL) {
+			freereg(fs, e->u.ind.t);
 			e->u.info = luaK_codeABC(fs, OP_GETTABLE, 0, e->u.ind.t, e->u.ind.idx);
 		} else { // VUPVAL
 			e->u.info = luaK_codeABC(fs, OP_GETTABUP, 0, e->u.ind.t, e->u.ind.idx);
@@ -270,7 +272,7 @@ void luaK_dischargevars(FuncState* fs, expdesc* e) {
 	} break;
 	case VCALL: {
 		e->k = VRELOCATE;
-		e->u.info = GET_ARG_A(fs->p->code[e->u.info]);
+		e->u.info = GET_ARG_A(get_instruction(fs,e));
 	} break;
 	default:break;
 	}

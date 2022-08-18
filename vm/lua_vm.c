@@ -78,14 +78,13 @@ static void op_gettabup(struct lua_State* L, LClosure* cl, StkId ra, Instruction
 	TValue* upval = cl->upvals[b]->v;
 	struct Table* t = gco2h(gcvalue(upval));
 	int arg_c = GET_ARG_C(i);
-	//luaGG_DumpTable(L, t);
+	//luaH_DumpTable(L, t);
 	if (ISK(arg_c)) {
 		int index = arg_c - MAININDEXRK - 1;
 		TValue* key = &cl->p->k[index];
 		TValue* value = (TValue*)luaH_get(L, t, key);
 		setobj(ra, value);
-	}
-	else {
+	} else {
 		TValue* value = L->ci->l.base + arg_c;
 		setobj(ra, value);
 	}

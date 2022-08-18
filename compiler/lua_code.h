@@ -5,7 +5,7 @@
 #include "lua_lexer.h"
 #include "lua_parser.h"
 
-#define get_instruction(fs, e) (fs->p->code[e->u.info])
+#define get_instruction(fs, e) ((fs)->p->code[(e)->u.info])
 #define NO_JUMP -1
 #define NO_REG MAXARG_A
 
